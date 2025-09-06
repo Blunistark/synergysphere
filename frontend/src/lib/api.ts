@@ -8,6 +8,7 @@ export const API_ENDPOINTS = {
   },
   PROJECTS: `${API_BASE_URL}/api/projects`,
   TASKS: `${API_BASE_URL}/api/tasks`,
+  USER_TASKS: `${API_BASE_URL}/api/tasks`,
   NOTIFICATIONS: `${API_BASE_URL}/api/notifications`,
   FILES: `${API_BASE_URL}/api/files`,
 };
@@ -43,10 +44,14 @@ export const apiRequest = async (url: string, options: RequestInit = {}) => {
 
   const response = await fetch(url, defaultOptions);
   
-  // Handle unauthorized responses
+  // Handle unauthorized responses - but only if not on login page
   if (response.status === 401) {
-    removeAuthToken();
-    window.location.href = '/login';
+    // Check if we're not already on the login page to prevent infinite redirects
+    if (!window.location.pathname.includes('/login')) {
+      removeAuthToken();
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
     throw new Error('Unauthorized');
   }
 

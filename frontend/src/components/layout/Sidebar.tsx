@@ -30,16 +30,6 @@ const navigationItems = [
     icon: CheckSquare,
   },
   {
-    title: "Resource mgmt",
-    href: "/resources",
-    icon: Users,
-  },
-  {
-    title: "Time log",
-    href: "/time",
-    icon: Clock,
-  },
-  {
     title: "Users",
     href: "/users",
     icon: Users,
@@ -48,11 +38,6 @@ const navigationItems = [
     title: "Project template", 
     href: "/templates",
     icon: Folder,
-  },
-  {
-    title: "Menu settings",
-    href: "/settings",
-    icon: Settings,
   },
 ];
 

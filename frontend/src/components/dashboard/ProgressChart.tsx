@@ -1,7 +1,75 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { dashboardService, DashboardStats } from "@/lib/dashboardService";
 
 export function ProgressChart() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const dashboardStats = await dashboardService.getDashboardStats();
+        setStats(dashboardStats);
+      } catch (err) {
+        console.error('Failed to fetch stats:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load statistics');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle>Overall Progress</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Loading stats...</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle>Overall Progress</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const completionRate = stats && stats.totalTasks > 0 
+    ? Math.round((stats.completedTasks / stats.totalTasks) * 100) 
+    : 0;
+
+  // Calculate stroke offset for progress circle
+  const circumference = 2 * Math.PI * 35;
+  const strokeOffset = circumference - (completionRate / 100) * circumference;
+
   return (
     <Card className="shadow-card">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -36,8 +104,8 @@ export function ProgressChart() {
               stroke="url(#gradient)"
               strokeWidth="8"
               fill="none"
-              strokeDasharray="220"
-              strokeDashoffset="62"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeOffset}
               strokeLinecap="round"
               className="transition-all duration-300"
             />
@@ -50,7 +118,7 @@ export function ProgressChart() {
             </defs>
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-bold">72%</span>
+            <span className="text-3xl font-bold">{completionRate}%</span>
             <span className="text-sm text-muted-foreground">Completed</span>
           </div>
         </div>
@@ -58,20 +126,20 @@ export function ProgressChart() {
       <CardContent className="pt-0">
         <div className="grid grid-cols-4 gap-4 text-center">
           <div>
-            <p className="text-2xl font-bold">95</p>
+            <p className="text-2xl font-bold">{stats?.totalProjects || 0}</p>
             <p className="text-xs text-muted-foreground">Total projects</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-success">26</p>
+            <p className="text-2xl font-bold text-green-600">{stats?.completedTasks || 0}</p>
             <p className="text-xs text-muted-foreground">Completed</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-warning">35</p>
-            <p className="text-xs text-muted-foreground">Delayed</p>
+            <p className="text-2xl font-bold text-blue-600">{stats?.pendingTasks || 0}</p>
+            <p className="text-xs text-muted-foreground">Pending</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-destructive">35</p>
-            <p className="text-xs text-muted-foreground">On going</p>
+            <p className="text-2xl font-bold text-purple-600">{stats?.totalUsers || 0}</p>
+            <p className="text-xs text-muted-foreground">Team Members</p>
           </div>
         </div>
       </CardContent>
