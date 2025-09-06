@@ -5,6 +5,7 @@ import { ProjectTable } from "@/components/dashboard/ProjectTable";
 import { ProgressChart } from "@/components/dashboard/ProgressChart";
 import { TaskList } from "@/components/dashboard/TaskList";
 import { WorkloadChart } from "@/components/dashboard/WorkloadChart";
+import { ThemeDemo } from "@/components/ui/theme-demo";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FolderOpen, Clock, Users, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -129,7 +130,11 @@ export default function Dashboard() {
           {/* Bottom Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <TaskList />
-            <WorkloadChart />
+            <div className="space-y-6">
+              <WorkloadChart />
+              {/* Theme Demo - for testing dark mode */}
+              <ThemeDemo />
+            </div>
           </div>
         </div>
       </main>

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { API_ENDPOINTS, setAuthToken } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -61,6 +62,11 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 flex items-center justify-center p-4">
+      {/* Theme toggle in top right corner */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+      
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-conic from-primary/20 via-transparent to-transparent rounded-full blur-3xl" />
         <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-conic from-accent/20 via-transparent to-transparent rounded-full blur-3xl" />
