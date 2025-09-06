@@ -175,8 +175,14 @@ export default function Profile() {
     if (!imagePath) return '';
     // If it's already a full URL, return as is
     if (imagePath.startsWith('http')) return imagePath;
-    // Otherwise, construct the URL with the backend URL
-    return `${process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : ''}${imagePath}`;
+    // Use relative URL that will go through nginx proxy in Docker, or direct backend URL in development
+    if (window.location.hostname === 'localhost' && window.location.port === '3000') {
+      // Direct Vite dev server
+      return `http://localhost:3000${imagePath}`;
+    } else {
+      // Docker/nginx proxy or production - use relative URL
+      return imagePath;
+    }
   };
 
   const userInitials = profile?.name
@@ -193,6 +199,26 @@ export default function Profile() {
           <div className="flex items-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin" />
             <span>Loading profile...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header title="Profile" />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+            <div>
+              <h3 className="text-lg font-medium">Failed to load profile</h3>
+              <p className="text-muted-foreground">{error || 'Unable to fetch profile data'}</p>
+            </div>
+            <Button onClick={fetchProfile} variant="outline">
+              Try Again
+            </Button>
           </div>
         </div>
       </div>

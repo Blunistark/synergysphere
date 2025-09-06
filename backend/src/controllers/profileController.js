@@ -98,14 +98,14 @@ const uploadProfileImage = async (req, res) => {
 
     // Delete old profile image if exists
     if (currentUser?.profileImage) {
-      const oldImagePath = path.join(__dirname, '../../uploads', path.basename(currentUser.profileImage));
+      const oldImagePath = path.join(__dirname, '../../uploads/profiles', path.basename(currentUser.profileImage));
       if (fs.existsSync(oldImagePath)) {
         fs.unlinkSync(oldImagePath);
       }
     }
 
     // Update user with new profile image path
-    const profileImageUrl = `/uploads/${req.file.filename}`;
+    const profileImageUrl = `/uploads/profiles/${req.file.filename}`;
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { profileImage: profileImageUrl },
@@ -146,7 +146,7 @@ const deleteProfileImage = async (req, res) => {
     }
 
     // Delete image file
-    const imagePath = path.join(__dirname, '../../uploads', path.basename(user.profileImage));
+    const imagePath = path.join(__dirname, '../../uploads/profiles', path.basename(user.profileImage));
     if (fs.existsSync(imagePath)) {
       fs.unlinkSync(imagePath);
     }
