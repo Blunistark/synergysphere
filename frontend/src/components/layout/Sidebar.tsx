@@ -16,7 +16,8 @@ import {
   Activity,
   ArrowLeft,
   LogOut,
-  User
+  User,
+  Bell
 } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -37,6 +38,11 @@ const navigationItems = [
     title: "My Tasks",
     href: "/tasks", 
     icon: CheckSquare,
+  },
+  {
+    title: "Notifications",
+    href: "/notifications",
+    icon: Bell,
   },
   {
     title: "Users",

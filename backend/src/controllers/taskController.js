@@ -64,7 +64,7 @@ const createTask = async (req, res) => {
       const notification = await prisma.notification.create({
         data: {
           userId: parseInt(assigneeId),
-          message: `You have been assigned a new task: ${title}`,
+          content: `You have been assigned a new task: ${title}`,
           type: 'task_assigned'
         }
       });
@@ -241,7 +241,7 @@ const updateTask = async (req, res) => {
         const notification = await prisma.notification.create({
           data: {
             userId: parseInt(assigneeId),
-            message: `You have been assigned to task: ${task.title}`,
+            content: `You have been assigned to task: ${task.title}`,
             type: 'task_assigned'
           }
         });

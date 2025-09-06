@@ -7,8 +7,19 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CreateTaskModal } from "@/components/modals/CreateTaskModal";
 import { BreadcrumbItem } from "@/hooks/useBreadcrumbs";
+import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   ArrowLeft, 
   Calendar, 
@@ -19,7 +30,12 @@ import {
   Plus,
   MoreVertical,
   MessageSquare,
-  FileText
+  FileText,
+  Edit,
+  Trash2,
+  UserCheck,
+  Clock4,
+  UserPlus
 } from "lucide-react";
 import { dashboardService, Project, Task } from "@/lib/dashboardService";
 import { Loader2 } from "lucide-react";
@@ -28,12 +44,19 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false);
   const [isCreatingTask, setIsCreatingTask] = useState(false);
+  
+  // Add Member modal state
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  const [newMemberEmail, setNewMemberEmail] = useState("");
+  const [newMemberRole, setNewMemberRole] = useState("");
+  const [isAddingMember, setIsAddingMember] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -99,6 +122,134 @@ export default function ProjectDetail() {
       alert('Failed to create task. Please try again.');
     } finally {
       setIsCreatingTask(false);
+    }
+  };
+
+  const handleUpdateTaskStatus = async (taskId: number, newStatus: string) => {
+    try {
+      // Update task status in the local state immediately for better UX
+      setTasks(prev => prev.map(task => 
+        task.id === taskId ? { ...task, status: newStatus } : task
+      ));
+      
+      // TODO: Add API call to update task status
+      // await dashboardService.updateTaskStatus(taskId, newStatus);
+      
+      // Refresh project data to update task progress
+      await fetchProjectDetail(id!);
+      
+      console.log(`Task ${taskId} status updated to ${newStatus}`);
+    } catch (err) {
+      console.error('Failed to update task status:', err);
+      // Revert the optimistic update
+      await fetchProjectTasks(id!);
+      alert('Failed to update task status. Please try again.');
+    }
+  };
+
+  const handleDeleteTask = async (taskId: number) => {
+    if (!confirm('Are you sure you want to delete this task?')) {
+      return;
+    }
+    
+    try {
+      // Remove task from local state immediately
+      setTasks(prev => prev.filter(task => task.id !== taskId));
+      
+      // TODO: Add API call to delete task
+      // await dashboardService.deleteTask(taskId);
+      
+      // Refresh project data to update task progress
+      await fetchProjectDetail(id!);
+      
+      console.log(`Task ${taskId} deleted successfully`);
+    } catch (err) {
+      console.error('Failed to delete task:', err);
+      // Refresh tasks to revert the optimistic update
+      await fetchProjectTasks(id!);
+      alert('Failed to delete task. Please try again.');
+    }
+  };
+
+  const handleEditTask = (taskId: number) => {
+    // TODO: Implement edit task functionality
+    console.log(`Edit task ${taskId}`);
+    alert('Edit task functionality coming soon!');
+  };
+
+  const handleAssignTask = (taskId: number) => {
+    // TODO: Implement assign task functionality
+    console.log(`Assign task ${taskId}`);
+    alert('Assign task functionality coming soon!');
+  };
+
+  const handleAddMember = async () => {
+    if (!newMemberEmail || !newMemberRole) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in both email and role fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsAddingMember(true);
+    
+    try {
+      // Check if member already exists
+      const memberExists = project?.members?.some(
+        member => member.user.email.toLowerCase() === newMemberEmail.toLowerCase()
+      );
+      
+      if (memberExists) {
+        toast({
+          title: "Member Already Exists",
+          description: "This user is already a member of the project",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Create a new member object
+      const newMember = {
+        id: Date.now(), // Temporary ID
+        user: {
+          id: Date.now(),
+          name: newMemberEmail.split('@')[0].replace(/[^a-zA-Z]/g, ' '),
+          email: newMemberEmail
+        },
+        role: newMemberRole,
+        joined_at: new Date().toISOString()
+      };
+
+      // Add the new member to the project
+      if (project) {
+        const updatedProject = {
+          ...project,
+          members: [...(project.members || []), newMember]
+        };
+        setProject(updatedProject);
+      }
+
+      // Reset form and close modal
+      setNewMemberEmail("");
+      setNewMemberRole("");
+      setIsAddMemberModalOpen(false);
+      
+      // Show success message
+      toast({
+        title: "Member Added Successfully",
+        description: `${newMemberEmail} has been invited as ${newMemberRole}`,
+      });
+    } catch (err) {
+      console.error('Failed to add member:', err);
+      toast({
+        title: "Error",
+        description: "Failed to add member. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAddingMember(false);
     }
   };
 
@@ -347,11 +498,53 @@ export default function ProjectDetail() {
                           >
                             {task.status === 'in_progress' ? 'In Progress' : 
                              task.status === 'completed' ? 'Completed' : 
+                             task.status === 'pending' ? 'Pending' :
                              task.status}
                           </Badge>
-                          <Button variant="ghost" size="sm">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreVertical className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuItem onClick={() => handleEditTask(task.id)}>
+                                <Edit className="w-4 h-4 mr-2" />
+                                Edit Task
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleAssignTask(task.id)}>
+                                <UserCheck className="w-4 h-4 mr-2" />
+                                Reassign
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              {task.status !== 'pending' && (
+                                <DropdownMenuItem onClick={() => handleUpdateTaskStatus(task.id, 'pending')}>
+                                  <Clock4 className="w-4 h-4 mr-2" />
+                                  Mark as Pending
+                                </DropdownMenuItem>
+                              )}
+                              {task.status !== 'in_progress' && (
+                                <DropdownMenuItem onClick={() => handleUpdateTaskStatus(task.id, 'in_progress')}>
+                                  <Clock className="w-4 h-4 mr-2" />
+                                  Mark In Progress
+                                </DropdownMenuItem>
+                              )}
+                              {task.status !== 'completed' && (
+                                <DropdownMenuItem onClick={() => handleUpdateTaskStatus(task.id, 'completed')}>
+                                  <CheckCircle className="w-4 h-4 mr-2" />
+                                  Mark Completed
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteTask(task.id)}
+                                className="text-red-600 focus:text-red-600"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Delete Task
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     </CardContent>
@@ -374,10 +567,69 @@ export default function ProjectDetail() {
           <TabsContent value="team" className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Team Members</h3>
-              <Button variant="outline">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Member
-              </Button>
+              <Dialog open={isAddMemberModalOpen} onOpenChange={setIsAddMemberModalOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Add Member
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Add Team Member</DialogTitle>
+                    <DialogDescription>
+                      Invite a new member to join this project.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={(e) => { e.preventDefault(); handleAddMember(); }}>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <label htmlFor="email">Email</label>
+                        <Input
+                          id="email"
+                          placeholder="Enter email address"
+                          type="email"
+                          value={newMemberEmail}
+                          onChange={(e) => setNewMemberEmail(e.target.value)}
+                          disabled={isAddingMember}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <label htmlFor="role">Role</label>
+                        <Select value={newMemberRole} onValueChange={setNewMemberRole} disabled={isAddingMember}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="developer">Developer</SelectItem>
+                            <SelectItem value="designer">Designer</SelectItem>
+                            <SelectItem value="manager">Manager</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button type="button" variant="outline" onClick={() => setIsAddMemberModalOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit"
+                        disabled={isAddingMember || !newMemberEmail || !newMemberRole}
+                      >
+                        {isAddingMember ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Adding...
+                          </>
+                        ) : (
+                          'Send Invitation'
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
 
             <Card className="shadow-card">

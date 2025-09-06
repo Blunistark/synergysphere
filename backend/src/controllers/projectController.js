@@ -303,7 +303,7 @@ const addTeamMember = async (req, res) => {
     const notification = await prisma.notification.create({
       data: {
         userId: userToAdd.id,
-        message: `You have been added to project: ${membership.project.name}`,
+        content: `You have been added to project: ${membership.project.name}`,
         type: 'project_invitation'
       }
     });

@@ -17,6 +17,7 @@ import ProjectTeam from "./pages/ProjectTeam";
 import ProjectActivity from "./pages/ProjectActivity";
 import Tasks from "./pages/Tasks";
 import Profile from "./pages/Profile";
+import Notifications from "./pages/Notifications";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
@@ -33,7 +34,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             {/* Landing page */}
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Login />} />
             
             {/* Auth routes without sidebar */}
             <Route path="/login" element={<Login />} />
@@ -109,6 +110,14 @@ const App = () => (
                 <div className="flex h-screen bg-background">
                   <Sidebar />
                   <Profile />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/notifications" element={
+              <ProtectedRoute>
+                <div className="flex h-screen bg-background">
+                  <Sidebar />
+                  <Notifications />
                 </div>
               </ProtectedRoute>
             } />

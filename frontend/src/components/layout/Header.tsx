@@ -7,7 +7,8 @@ import {
   Monitor,
   Palette,
   Globe,
-  Shield
+  Shield,
+  Bell
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown";
+import { NotificationsSidebar } from "@/components/notifications/NotificationsSidebar";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { BreadcrumbItem } from "@/hooks/useBreadcrumbs";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -35,6 +37,7 @@ interface HeaderProps {
 
 export function Header({ title, customBreadcrumbs }: HeaderProps) {
   const { theme, setTheme } = useTheme();
+  const [isNotificationsSidebarOpen, setIsNotificationsSidebarOpen] = useState(false);
 
   const handleHelp = () => {
     console.log('Opening help documentation');
@@ -75,7 +78,17 @@ export function Header({ title, customBreadcrumbs }: HeaderProps) {
         </div>
 
         {/* Notifications */}
-        <NotificationsDropdown />
+        <div className="flex items-center gap-1">
+          <NotificationsDropdown />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setIsNotificationsSidebarOpen(true)}
+            title="Open notifications sidebar"
+          >
+            <Bell className="h-5 w-5" />
+          </Button>
+        </div>
 
         {/* Theme Toggle */}
         <ThemeToggle />
@@ -143,6 +156,12 @@ export function Header({ title, customBreadcrumbs }: HeaderProps) {
         </DropdownMenu>
       </div>
     </header>
-    </div>
+
+    {/* Notifications Sidebar */}
+    <NotificationsSidebar 
+      isOpen={isNotificationsSidebarOpen}
+      onClose={() => setIsNotificationsSidebarOpen(false)}
+    />
+  </div>
   );
 }

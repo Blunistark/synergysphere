@@ -52,7 +52,7 @@ export function TaskList() {
 
   const filterTasks = (tasks: Task[], filter: string) => {
     switch (filter) {
-      case "todo":
+      case "odo":
         return tasks.filter(task => task.status === "To-Do");
       case "progress":
         return tasks.filter(task => task.status === "In Progress");

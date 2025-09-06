@@ -134,9 +134,10 @@ export default function Projects() {
       setEditingProject(null);
       
       console.log("Project updated successfully:", response.project);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to update project:', err);
-      alert('Failed to update project. Please try again.');
+      const errorMessage = err.message || 'Failed to update project. Please try again.';
+      alert(errorMessage);
     } finally {
       setIsUpdating(false);
     }
