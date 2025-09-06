@@ -34,12 +34,22 @@ export const isAuthenticated = () => {
 export const apiRequest = async (url: string, options: RequestInit = {}) => {
   const token = getAuthToken();
   
+  // Don't set Content-Type for FormData uploads (browser sets it automatically with boundary)
+  const isFormData = options.body instanceof FormData;
+  
+  const headers: HeadersInit = {
+    ...(token && { Authorization: `Bearer ${token}` }),
+    ...options.headers,
+  };
+  
+  // Only add Content-Type for non-FormData requests
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
+  
   const defaultOptions: RequestInit = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-    },
     ...options,
+    headers,
   };
 
   const response = await fetch(url, defaultOptions);

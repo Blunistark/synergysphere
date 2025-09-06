@@ -1,6 +1,6 @@
 const express = require('express');
 const { authenticateToken } = require('../middleware/auth');
-const { uploadProfileImage } = require('../middleware/upload');
+const { uploadProfileImage, handleUploadError } = require('../middleware/upload');
 const { 
   getProfile, 
   updateProfile, 
@@ -20,7 +20,7 @@ router.get('/', getProfile);
 router.put('/', updateProfile);
 
 // Upload profile image
-router.post('/image', uploadProfileImage, uploadProfileImageController);
+router.post('/image', uploadProfileImage, handleUploadError, uploadProfileImageController);
 
 // Delete profile image
 router.delete('/image', deleteProfileImage);

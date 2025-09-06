@@ -78,8 +78,16 @@ const updateProfile = async (req, res) => {
 const uploadProfileImage = async (req, res) => {
   try {
     const userId = req.user.id;
+    
+    console.log('Upload request received:', {
+      userId,
+      file: req.file,
+      body: req.body,
+      headers: req.headers['content-type']
+    });
 
     if (!req.file) {
+      console.log('No file in req.file');
       return res.status(400).json({ error: 'No file uploaded' });
     }
 

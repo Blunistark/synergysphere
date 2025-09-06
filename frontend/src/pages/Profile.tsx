@@ -121,8 +121,17 @@ export default function Profile() {
       const formData = new FormData();
       formData.append('profileImage', file);
 
-      const response = await apiRequest('/api/profile/image', {
+      console.log('Sending FormData:', formData);
+      console.log('File details:', { name: file.name, size: file.size, type: file.type });
+
+      // Use fetch directly for file upload to avoid any apiRequest interference
+      const token = localStorage.getItem('authToken');
+      const response = await fetch('/api/profile/image', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+          // Deliberately not setting Content-Type - let browser set it
+        },
         body: formData
       });
 

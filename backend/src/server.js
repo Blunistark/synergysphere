@@ -29,7 +29,17 @@ app.use(cors({
   credentials: true
 }));
 app.use(morgan('combined'));
-app.use(express.json());
+
+// JSON parsing middleware - exclude file upload routes
+app.use((req, res, next) => {
+  if (req.path.includes('/image') || req.path.includes('/upload')) {
+    // Skip JSON parsing for file upload routes
+    next();
+  } else {
+    express.json()(req, res, next);
+  }
+});
+
 app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded files
