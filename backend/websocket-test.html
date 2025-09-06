@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SynergySphere WebSocket Test</title>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .section {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        input, select, button {
+            margin: 5px;
+            padding: 8px;
+        }
+        .connected {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .info {
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 SynergySphere WebSocket Test Client</h1>
+        
+        <div class="section">
+            <h3>Connection</h3>
+            <input type="text" id="tokenInput" placeholder="JWT Token" style="width: 300px;">
+            <button onclick="connect()">Connect</button>
+            <button onclick="disconnect()">Disconnect</button>
+            <div id="connectionStatus">Disconnected</div>
+        </div>
+
+        <div class="section">
+            <h3>Project Actions</h3>
+            <input type="number" id="projectIdInput" placeholder="Project ID">
+            <button onclick="joinProject()">Join Project</button>
+            <button onclick="leaveProject()">Leave Project</button>
+            <button onclick="startTyping()">Start Typing</button>
+            <button onclick="stopTyping()">Stop Typing</button>
+        </div>
+
+        <div class="section">
+            <h3>Real-time Events Log</h3>
+            <div id="log" class="log"></div>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+    </div>
+
+    <script>
+        let socket = null;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'connected' ? 'connected' : 'info';
+            logDiv.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateConnectionStatus(status, type = 'info') {
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.textContent = status;
+            statusDiv.className = type;
+        }
+
+        function connect() {
+            const token = document.getElementById('tokenInput').value.trim();
+            if (!token) {
+                alert('Please enter a JWT token');
+                return;
+            }
+
+            if (socket) {
+                socket.disconnect();
+            }
+
+            socket = io('http://localhost:3000', {
+                auth: {
+                    token: token
+                }
+            });
+
+            socket.on('connect', () => {
+                log('✅ Connected to WebSocket server', 'connected');
+                updateConnectionStatus('Connected', 'connected');
+            });
+
+            socket.on('disconnect', (reason) => {
+                log(`❌ Disconnected: ${reason}`, 'error');
+                updateConnectionStatus('Disconnected', 'error');
+            });
+
+            socket.on('connect_error', (error) => {
+                log(`🚫 Connection error: ${error.message}`, 'error');
+                updateConnectionStatus('Connection Error', 'error');
+            });
+
+            // Real-time event listeners
+            socket.on('task_updated', (data) => {
+                log(`📝 Task Updated: ${JSON.stringify(data)}`, 'info');
+            });
+
+            socket.on('new_message', (data) => {
+                log(`💬 New Message: ${JSON.stringify(data)}`, 'info');
+            });
+
+            socket.on('new_notification', (data) => {
+                log(`🔔 New Notification: ${JSON.stringify(data)}`, 'info');
+            });
+
+            socket.on('project_updated', (data) => {
+                log(`📁 Project Updated: ${JSON.stringify(data)}`, 'info');
+            });
+
+            socket.on('team_member_added', (data) => {
+                log(`👥 Team Member Added: ${JSON.stringify(data)}`, 'info');
+            });
+
+            socket.on('team_member_removed', (data) => {
+                log(`👥 Team Member Removed: ${JSON.stringify(data)}`, 'info');
+            });
+
+            socket.on('user_typing', (data) => {
+                log(`⌨️ User Typing: ${data.userName} in project ${data.projectId}`, 'info');
+            });
+
+            socket.on('user_stopped_typing', (data) => {
+                log(`⌨️ User Stopped Typing: User ${data.userId} in project ${data.projectId}`, 'info');
+            });
+
+            socket.on('joined_project', (data) => {
+                log(`🎯 Joined Project: ${data.projectId}`, 'connected');
+            });
+
+            socket.on('left_project', (data) => {
+                log(`🚪 Left Project: ${data.projectId}`, 'info');
+            });
+
+            socket.on('error', (data) => {
+                log(`❌ Server Error: ${data.message}`, 'error');
+            });
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+            }
+        }
+
+        function joinProject() {
+            if (!socket || !socket.connected) {
+                alert('Please connect first');
+                return;
+            }
+            const projectId = document.getElementById('projectIdInput').value;
+            if (!projectId) {
+                alert('Please enter a project ID');
+                return;
+            }
+            socket.emit('join_project', projectId);
+        }
+
+        function leaveProject() {
+            if (!socket || !socket.connected) {
+                alert('Please connect first');
+                return;
+            }
+            const projectId = document.getElementById('projectIdInput').value;
+            if (!projectId) {
+                alert('Please enter a project ID');
+                return;
+            }
+            socket.emit('leave_project', projectId);
+        }
+
+        function startTyping() {
+            if (!socket || !socket.connected) {
+                alert('Please connect first');
+                return;
+            }
+            const projectId = document.getElementById('projectIdInput').value;
+            if (!projectId) {
+                alert('Please enter a project ID');
+                return;
+            }
+            socket.emit('typing_start', { projectId });
+        }
+
+        function stopTyping() {
+            if (!socket || !socket.connected) {
+                alert('Please connect first');
+                return;
+            }
+            const projectId = document.getElementById('projectIdInput').value;
+            if (!projectId) {
+                alert('Please enter a project ID');
+                return;
+            }
+            socket.emit('typing_stop', { projectId });
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // Auto-scroll log
+        setInterval(() => {
+            const logDiv = document.getElementById('log');
+            if (logDiv.scrollHeight > logDiv.clientHeight) {
+                logDiv.scrollTop = logDiv.scrollHeight;
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
