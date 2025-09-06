@@ -22,20 +22,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { BreadcrumbItem } from "@/hooks/useBreadcrumbs";
+import { useTheme } from "@/contexts/ThemeContext";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useState } from "react";
 
 interface HeaderProps {
   title: string;
+  customBreadcrumbs?: BreadcrumbItem[];
 }
 
-export function Header({ title }: HeaderProps) {
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
-
-  const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
-    setTheme(newTheme);
-    // TODO: Implement actual theme switching logic
-    console.log('Theme changed to:', newTheme);
-  };
+export function Header({ title, customBreadcrumbs }: HeaderProps) {
+  const { theme, setTheme } = useTheme();
 
   const handleHelp = () => {
     console.log('Opening help documentation');
@@ -52,21 +51,17 @@ export function Header({ title }: HeaderProps) {
     // TODO: Open language settings modal
   };
 
-  const handlePrivacySettings = () => {
-    console.log('Opening privacy settings');
-    // TODO: Open privacy settings modal
-  };
-
-  const handleLanguageSettings = () => {
-    console.log('Opening language settings');
-    // TODO: Open language settings modal
-  };
-
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-background px-6">
-      <div className="flex items-center gap-4">
-        <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
+    <div>
+      {/* Breadcrumbs */}
+      <div className="px-6 py-3 bg-muted/50 border-b border-border">
+        <Breadcrumbs customBreadcrumbs={customBreadcrumbs} />
       </div>
+      
+      <header className="flex h-16 items-center justify-between border-b bg-background px-6">
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
+        </div>
 
       <div className="flex items-center gap-4">
         {/* Search */}
@@ -81,6 +76,9 @@ export function Header({ title }: HeaderProps) {
 
         {/* Notifications */}
         <NotificationsDropdown />
+
+        {/* Theme Toggle */}
+        <ThemeToggle />
 
         {/* Help */}
         <Button variant="ghost" size="sm" onClick={handleHelp}>
@@ -102,17 +100,17 @@ export function Header({ title }: HeaderProps) {
                 <span>Theme</span>
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
-                <DropdownMenuItem onClick={() => handleThemeChange('light')}>
+                <DropdownMenuItem onClick={() => setTheme('light')}>
                   <Sun className="mr-2 h-4 w-4" />
                   <span>Light</span>
                   {theme === 'light' && <span className="ml-auto">✓</span>}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleThemeChange('dark')}>
+                <DropdownMenuItem onClick={() => setTheme('dark')}>
                   <Moon className="mr-2 h-4 w-4" />
                   <span>Dark</span>
                   {theme === 'dark' && <span className="ml-auto">✓</span>}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleThemeChange('system')}>
+                <DropdownMenuItem onClick={() => setTheme('system')}>
                   <Monitor className="mr-2 h-4 w-4" />
                   <span>System</span>
                   {theme === 'system' && <span className="ml-auto">✓</span>}
@@ -145,5 +143,6 @@ export function Header({ title }: HeaderProps) {
         </DropdownMenu>
       </div>
     </header>
+    </div>
   );
 }

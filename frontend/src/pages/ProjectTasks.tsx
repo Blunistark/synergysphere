@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CreateTaskModal } from "@/components/modals/CreateTaskModal";
+import { BreadcrumbItem } from "@/hooks/useBreadcrumbs";
 import { 
   Plus,
   Search,
@@ -140,7 +141,10 @@ export default function ProjectTasks() {
   if (isLoading) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header title="Project Tasks" />
+        <Header title="Project Tasks" customBreadcrumbs={[
+          { label: 'Projects', href: '/projects' },
+          { label: 'Loading...', isCurrentPage: true }
+        ]} />
         <div className="flex-1 flex items-center justify-center">
           <div className="flex items-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin" />
@@ -154,7 +158,10 @@ export default function ProjectTasks() {
   if (error) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header title="Project Tasks" />
+        <Header title="Project Tasks" customBreadcrumbs={[
+          { label: 'Projects', href: '/projects' },
+          { label: 'Error', isCurrentPage: true }
+        ]} />
         <div className="flex-1 flex items-center justify-center p-6">
           <Alert variant="destructive" className="max-w-md">
             <AlertTriangle className="h-4 w-4" />
@@ -172,9 +179,19 @@ export default function ProjectTasks() {
     pending: tasks.filter(t => t.status === 'pending').length,
   };
 
+  // Create custom breadcrumbs
+  const breadcrumbs: BreadcrumbItem[] = project ? [
+    { label: 'Projects', href: '/projects' },
+    { label: project.name, href: `/projects/${id}` },
+    { label: 'Tasks', isCurrentPage: true }
+  ] : [
+    { label: 'Projects', href: '/projects' },
+    { label: 'Tasks', isCurrentPage: true }
+  ];
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <Header title={`${project?.name} - Tasks`} />
+      <Header title={`${project?.name || 'Project'} - Tasks`} customBreadcrumbs={breadcrumbs} />
       
       <main className="flex-1 overflow-auto px-6 py-6">
         {/* Task Statistics */}

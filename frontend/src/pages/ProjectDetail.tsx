@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CreateTaskModal } from "@/components/modals/CreateTaskModal";
+import { BreadcrumbItem } from "@/hooks/useBreadcrumbs";
 import { 
   ArrowLeft, 
   Calendar, 
@@ -118,7 +119,7 @@ export default function ProjectDetail() {
   if (isLoading) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header title="Project Details" />
+        <Header title="Project Details" customBreadcrumbs={[{ label: 'Projects', href: '/projects' }, { label: 'Loading...', isCurrentPage: true }]} />
         <div className="flex-1 flex items-center justify-center">
           <div className="flex items-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin" />
@@ -132,7 +133,7 @@ export default function ProjectDetail() {
   if (error || !project) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header title="Project Details" />
+        <Header title="Project Details" customBreadcrumbs={[{ label: 'Projects', href: '/projects' }, { label: 'Error', isCurrentPage: true }]} />
         <div className="flex-1 flex items-center justify-center p-6">
           <Alert variant="destructive" className="max-w-md">
             <AlertCircle className="h-4 w-4" />
@@ -145,9 +146,15 @@ export default function ProjectDetail() {
 
   const completionPercentage = project.taskProgress?.percentage || 0;
 
+  // Create custom breadcrumbs for this project
+  const breadcrumbs: BreadcrumbItem[] = [
+    { label: 'Projects', href: '/projects' },
+    { label: project.name, isCurrentPage: true }
+  ];
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <Header title="Project Details" />
+      <Header title="Project Details" customBreadcrumbs={breadcrumbs} />
       
       {/* Back Button */}
       <div className="p-6 pb-2">
