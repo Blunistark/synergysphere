@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } fro  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop overlay - no blur */}
+      <div 
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+      />
+      
+      {/* Modal with glass effect */}
+      <div className="relative w-full max-w-2xl mx-4 bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/25 border border-white/20 dark:border-white/10 max-h-[90vh] overflow-y-auto">nents/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,20 +67,20 @@ export function CreateTaskModal({ isOpen, onClose, onSubmit, projectMembers = []
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Glass effect backdrop */}
       <div 
-        className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40 backdrop-blur-md"
         onClick={onClose}
       />
       
       {/* Modal */}
-      <div className="relative w-full max-w-2xl mx-4 bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-2xl mx-4 bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/25 border border-white/20 dark:border-white/10 max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/20">
-          <h2 className="text-2xl font-bold text-gray-900">Create Task</h2>
+        <div className="flex items-center justify-between p-6 border-b border-white/20 dark:border-white/10">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create Task</h2>
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="hover:bg-white/20 rounded-full"
+            className="hover:bg-white/20 dark:hover:bg-white/10 rounded-full text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -81,7 +90,7 @@ export function CreateTaskModal({ isOpen, onClose, onSubmit, projectMembers = []
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Task Title */}
           <div className="space-y-2">
-            <Label htmlFor="title" className="text-sm font-medium text-gray-700">
+            <Label htmlFor="title" className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Task Title
             </Label>
             <Input
@@ -89,14 +98,13 @@ export function CreateTaskModal({ isOpen, onClose, onSubmit, projectMembers = []
               placeholder="Enter task title"
               value={formData.title}
               onChange={(e) => handleInputChange("title", e.target.value)}
-              className="bg-white/50 backdrop-blur-sm border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20"
               required
             />
           </div>
 
           {/* Task Description */}
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+            <Label htmlFor="description" className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Task Description
             </Label>
             <Textarea
@@ -104,7 +112,7 @@ export function CreateTaskModal({ isOpen, onClose, onSubmit, projectMembers = []
               placeholder="Describe the task"
               value={formData.description}
               onChange={(e) => handleInputChange("description", e.target.value)}
-              className="bg-white/50 backdrop-blur-sm border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20 min-h-[100px]"
+              className="min-h-[100px]"
               required
             />
           </div>
@@ -113,9 +121,9 @@ export function CreateTaskModal({ isOpen, onClose, onSubmit, projectMembers = []
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Priority */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Priority</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Priority</Label>
               <Select value={formData.priority} onValueChange={(value) => handleInputChange("priority", value)}>
-                <SelectTrigger className="bg-white/50 backdrop-blur-sm border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20">
+                <SelectTrigger>
                   <SelectValue placeholder="Select priority" />
                 </SelectTrigger>
                 <SelectContent>
@@ -129,9 +137,9 @@ export function CreateTaskModal({ isOpen, onClose, onSubmit, projectMembers = []
 
             {/* Status */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Status</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</Label>
               <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
-                <SelectTrigger className="bg-white/50 backdrop-blur-sm border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20">
+                <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -147,9 +155,9 @@ export function CreateTaskModal({ isOpen, onClose, onSubmit, projectMembers = []
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Assignee */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Assign To</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Assign To</Label>
               <Select value={formData.assigneeId} onValueChange={(value) => handleInputChange("assigneeId", value)}>
-                <SelectTrigger className="bg-white/50 backdrop-blur-sm border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20">
+                <SelectTrigger>
                   <SelectValue placeholder="Select assignee" />
                 </SelectTrigger>
                 <SelectContent>
@@ -165,13 +173,13 @@ export function CreateTaskModal({ isOpen, onClose, onSubmit, projectMembers = []
 
             {/* Due Date */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Due Date</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Due Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal bg-white/50 backdrop-blur-sm border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20",
+                      "w-full justify-start text-left font-normal",
                       !formData.dueDate && "text-muted-foreground"
                     )}
                   >
@@ -179,7 +187,7 @@ export function CreateTaskModal({ isOpen, onClose, onSubmit, projectMembers = []
                     {formData.dueDate ? format(formData.dueDate, "PPP") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-white/90 backdrop-blur-md border-white/20">
+                <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
                     selected={formData.dueDate}

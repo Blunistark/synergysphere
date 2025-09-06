@@ -7,8 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CreateTaskModal } from "@/components/modals/CreateTaskModal";
+import { KanbanBoard } from "@/components/kanban/KanbanBoard";
 import { BreadcrumbItem } from "@/hooks/useBreadcrumbs";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Plus,
   Search,
@@ -19,7 +22,9 @@ import {
   FileText,
   CheckCircle,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  List,
+  LayoutGrid
 } from "lucide-react";
 import { dashboardService, Project, Task } from "@/lib/dashboardService";
 import { Loader2 } from "lucide-react";
@@ -27,6 +32,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function ProjectTasks() {
   const { id } = useParams<{ id: string }>();
+  const { toast } = useToast();
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
@@ -36,6 +42,7 @@ export default function ProjectTasks() {
   const [isCreatingTask, setIsCreatingTask] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
 
   useEffect(() => {
     if (id) {
@@ -45,12 +52,15 @@ export default function ProjectTasks() {
 
   useEffect(() => {
     // Filter tasks based on search term and status
+    console.log('All tasks:', tasks);
+    console.log('Current filters - search:', searchTerm, 'status:', statusFilter);
+    
     let filtered = tasks;
     
     if (searchTerm) {
       filtered = filtered.filter(task => 
-        task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        task.description.toLowerCase().includes(searchTerm.toLowerCase())
+        task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        task.description?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
@@ -58,6 +68,7 @@ export default function ProjectTasks() {
       filtered = filtered.filter(task => task.status === statusFilter);
     }
     
+    console.log('Filtered tasks:', filtered);
     setFilteredTasks(filtered);
   }, [tasks, searchTerm, statusFilter]);
 
@@ -72,14 +83,17 @@ export default function ProjectTasks() {
       
       if (foundProject) {
         setProject(foundProject);
+        console.log('Found project:', foundProject);
       } else {
         setError('Project not found');
         return;
       }
 
       // Fetch project tasks
+      console.log('Fetching tasks for project ID:', projectId);
       const tasksResponse = await dashboardService.getProjectTasks(parseInt(projectId));
-      setTasks(tasksResponse.tasks);
+      console.log('Tasks response:', tasksResponse);
+      setTasks(tasksResponse.tasks || []);
     } catch (err) {
       console.error('Failed to fetch project data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load project data');
@@ -106,6 +120,46 @@ export default function ProjectTasks() {
     } finally {
       setIsCreatingTask(false);
     }
+  };
+
+  const handleTaskStatusChange = async (taskId: number, newStatus: string) => {
+    try {
+      // Update the task status locally first for immediate UI feedback
+      setTasks(prevTasks => 
+        prevTasks.map(task => 
+          task.id === taskId ? { ...task, status: newStatus } : task
+        )
+      );
+
+      // In a real app, you would make an API call here
+      // await dashboardService.updateTaskStatus(taskId, newStatus);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      console.log(`Task ${taskId} status updated to ${newStatus}`);
+    } catch (err) {
+      console.error('Failed to update task status:', err);
+      
+      // Revert the change on error
+      setTasks(prevTasks => 
+        prevTasks.map(task => 
+          task.id === taskId ? { ...task, status: task.status } : task
+        )
+      );
+      
+      toast({
+        title: "Error",
+        description: "Failed to update task status. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleTaskClick = (task: Task) => {
+    // Handle task click - could open a detailed view modal
+    console.log('Task clicked:', task);
+    // You could implement a task detail modal here
   };
 
   const getStatusIcon = (status: string) => {
@@ -271,6 +325,27 @@ export default function ProjectTasks() {
                     <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>
+                {/* View Mode Switcher */}
+                <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+                  <Button
+                    variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('kanban')}
+                    className="rounded-none"
+                  >
+                    <LayoutGrid className="w-4 h-4 mr-2" />
+                    Kanban
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="rounded-none"
+                  >
+                    <List className="w-4 h-4 mr-2" />
+                    List
+                  </Button>
+                </div>
               </div>
               <Button 
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
@@ -293,51 +368,63 @@ export default function ProjectTasks() {
           </CardHeader>
         </Card>
 
-        {/* Tasks List */}
+        {/* Tasks Views */}
         {filteredTasks.length > 0 ? (
-          <div className="space-y-4">
-            {filteredTasks.map((task) => (
-              <Card key={task.id} className="shadow-card hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        {getStatusIcon(task.status)}
-                        <h4 className="font-semibold text-lg">{task.title}</h4>
-                      </div>
-                      <p className="text-muted-foreground mb-3 line-clamp-2">{task.description}</p>
-                      <div className="flex items-center gap-6 text-sm">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          <span>Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}</span>
-                        </div>
-                        {task.assignee && (
-                          <div className="flex items-center gap-2">
-                            <Avatar className="w-6 h-6">
-                              <AvatarFallback className="text-xs">
-                                {task.assignee.name?.split(' ').map(n => n[0]).join('') || 'U'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span>{task.assignee.name}</span>
+          <>
+            {viewMode === 'kanban' ? (
+              <div className="min-h-[600px]">
+                <KanbanBoard 
+                  tasks={filteredTasks}
+                  onTaskStatusChange={handleTaskStatusChange}
+                  onTaskClick={handleTaskClick}
+                />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredTasks.map((task) => (
+                  <Card key={task.id} className="shadow-card hover:shadow-md transition-shadow">
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            {getStatusIcon(task.status)}
+                            <h4 className="font-semibold text-lg">{task.title}</h4>
                           </div>
-                        )}
+                          <p className="text-muted-foreground mb-3 line-clamp-2">{task.description}</p>
+                          <div className="flex items-center gap-6 text-sm">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4" />
+                              <span>Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}</span>
+                            </div>
+                            {task.assignee && (
+                              <div className="flex items-center gap-2">
+                                <Avatar className="w-6 h-6">
+                                  <AvatarFallback className="text-xs">
+                                    {task.assignee.name?.split(' ').map(n => n[0]).join('') || 'U'}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span>{task.assignee.name}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge 
+                            className={getStatusColor(task.status)}
+                          >
+                            {formatStatus(task.status)}
+                          </Badge>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge 
-                        className={getStatusColor(task.status)}
-                      >
-                        {formatStatus(task.status)}
-                      </Badge>
-                      <Button variant="ghost" size="sm">
-                        <MoreVertical className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </>
         ) : (
           <Card className="shadow-card">
             <CardContent className="pt-6">

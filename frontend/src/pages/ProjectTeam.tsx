@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Plus,
   Search,
@@ -28,12 +29,18 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function ProjectTeam() {
   const { id } = useParams<{ id: string }>();
+  const { toast } = useToast();
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+  
+  // Add Member form state
+  const [newMemberEmail, setNewMemberEmail] = useState("");
+  const [newMemberRole, setNewMemberRole] = useState("");
+  const [isAddingMember, setIsAddingMember] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -59,6 +66,89 @@ export default function ProjectTeam() {
       setError(err instanceof Error ? err.message : 'Failed to load project');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleAddMember = async () => {
+    if (!newMemberEmail || !newMemberRole) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newMemberEmail)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsAddingMember(true);
+    try {
+      // Simulate API call - in a real app, you'd call your backend API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Check if member already exists
+      const memberExists = project?.members?.some(member => 
+        member.user.email.toLowerCase() === newMemberEmail.toLowerCase()
+      );
+      
+      if (memberExists) {
+        toast({
+          title: "Member Already Exists",
+          description: "This user is already a member of the project",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Create a new member object
+      const newMember = {
+        id: Date.now(), // Temporary ID
+        user: {
+          id: Date.now(),
+          name: newMemberEmail.split('@')[0].replace(/[^a-zA-Z]/g, ' '),
+          email: newMemberEmail
+        },
+        role: newMemberRole,
+        joined_at: new Date().toISOString()
+      };
+
+      // Add the new member to the project
+      if (project) {
+        const updatedProject = {
+          ...project,
+          members: [...(project.members || []), newMember]
+        };
+        setProject(updatedProject);
+      }
+
+      // Reset form and close modal
+      setNewMemberEmail("");
+      setNewMemberRole("");
+      setIsAddMemberModalOpen(false);
+      
+      // Show success message
+      toast({
+        title: "Member Added Successfully",
+        description: `${newMemberEmail} has been invited as ${newMemberRole}`,
+      });
+    } catch (err) {
+      console.error('Failed to add member:', err);
+      toast({
+        title: "Error",
+        description: "Failed to add member. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAddingMember(false);
     }
   };
 
@@ -231,35 +321,53 @@ export default function ProjectTeam() {
                       Invite a new member to join this project.
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                      <label htmlFor="email">Email</label>
-                      <Input
-                        id="email"
-                        placeholder="Enter email address"
-                        type="email"
-                      />
+                  <form onSubmit={(e) => { e.preventDefault(); handleAddMember(); }}>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <label htmlFor="email">Email</label>
+                        <Input
+                          id="email"
+                          placeholder="Enter email address"
+                          type="email"
+                          value={newMemberEmail}
+                          onChange={(e) => setNewMemberEmail(e.target.value)}
+                          disabled={isAddingMember}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <label htmlFor="role">Role</label>
+                        <Select value={newMemberRole} onValueChange={setNewMemberRole} disabled={isAddingMember}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="developer">Developer</SelectItem>
+                            <SelectItem value="designer">Designer</SelectItem>
+                            <SelectItem value="manager">Manager</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    <div className="grid gap-2">
-                      <label htmlFor="role">Role</label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="developer">Developer</SelectItem>
-                          <SelectItem value="designer">Designer</SelectItem>
-                          <SelectItem value="manager">Manager</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAddMemberModalOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button>Send Invitation</Button>
-                  </DialogFooter>
+                    <DialogFooter>
+                      <Button type="button" variant="outline" onClick={() => setIsAddMemberModalOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit"
+                        disabled={isAddingMember || !newMemberEmail || !newMemberRole}
+                      >
+                        {isAddingMember ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Adding...
+                          </>
+                        ) : (
+                          'Send Invitation'
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </form>
                 </DialogContent>
               </Dialog>
             </div>

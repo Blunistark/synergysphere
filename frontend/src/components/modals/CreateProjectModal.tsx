@@ -48,22 +48,22 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit }: CreateProjectM
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Glass effect backdrop */}
+      {/* Backdrop overlay - no blur */}
       <div 
-        className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40"
         onClick={onClose}
       />
       
-      {/* Modal */}
-      <div className="relative w-full max-w-2xl mx-4 bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 max-h-[90vh] overflow-y-auto">
+      {/* Modal with glass effect */}
+      <div className="relative w-full max-w-2xl mx-4 bg-white/10 dark:bg-black/20 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/25 border border-white/20 dark:border-white/10 max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/20">
-          <h2 className="text-2xl font-bold text-gray-900">Create Project</h2>
+        <div className="flex items-center justify-between p-6 border-b border-white/20 dark:border-white/10">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Create Project</h2>
           <Button
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="hover:bg-white/20 rounded-full"
+            className="hover:bg-white/20 dark:hover:bg-white/10 rounded-full text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -73,7 +73,7 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit }: CreateProjectM
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Project Title */}
           <div className="space-y-2">
-            <Label htmlFor="title" className="text-sm font-medium text-gray-700">
+            <Label htmlFor="title" className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Project Title
             </Label>
             <Input
@@ -81,14 +81,13 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit }: CreateProjectM
               placeholder="Enter project title"
               value={formData.title}
               onChange={(e) => handleInputChange("title", e.target.value)}
-              className="bg-white/50 backdrop-blur-sm border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20"
               required
             />
           </div>
 
           {/* Project Description */}
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+            <Label htmlFor="description" className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Project Description
             </Label>
             <Textarea
@@ -96,7 +95,7 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit }: CreateProjectM
               placeholder="Describe your project"
               value={formData.description}
               onChange={(e) => handleInputChange("description", e.target.value)}
-              className="bg-white/50 backdrop-blur-sm border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20 min-h-[100px]"
+              className="min-h-[100px]"
               required
             />
           </div>
@@ -105,9 +104,9 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit }: CreateProjectM
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Priority */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Priority</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Priority</Label>
               <Select value={formData.priority} onValueChange={(value) => handleInputChange("priority", value)}>
-                <SelectTrigger className="bg-white/50 backdrop-blur-sm border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20">
+                <SelectTrigger>
                   <SelectValue placeholder="Select priority" />
                 </SelectTrigger>
                 <SelectContent>
@@ -120,9 +119,9 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit }: CreateProjectM
 
             {/* Category */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Category</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Category</Label>
               <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
-                <SelectTrigger className="bg-white/50 backdrop-blur-sm border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20">
+                <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -140,13 +139,13 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit }: CreateProjectM
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Due Date */}
             <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700">Due Date</Label>
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Due Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal bg-white/50 backdrop-blur-sm border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20",
+                      "w-full justify-start text-left font-normal",
                       !formData.dueDate && "text-muted-foreground"
                     )}
                   >
@@ -154,7 +153,7 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit }: CreateProjectM
                     {formData.dueDate ? format(formData.dueDate, "PPP") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-white/90 backdrop-blur-md border-white/20">
+                <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
                     selected={formData.dueDate}
@@ -167,7 +166,7 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit }: CreateProjectM
 
             {/* Budget */}
             <div className="space-y-2">
-              <Label htmlFor="budget" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="budget" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Budget (Optional)
               </Label>
               <Input
@@ -175,7 +174,6 @@ export function CreateProjectModal({ isOpen, onClose, onSubmit }: CreateProjectM
                 placeholder="$0.00"
                 value={formData.budget}
                 onChange={(e) => handleInputChange("budget", e.target.value)}
-                className="bg-white/50 backdrop-blur-sm border-white/30 focus:border-blue-500/50 focus:ring-blue-500/20"
               />
             </div>
           </div>
