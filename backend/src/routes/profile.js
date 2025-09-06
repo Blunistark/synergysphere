@@ -1,17 +1,17 @@
 const express = require('express');
-const { auth } = require('../middleware/auth');
-const { upload } = require('../middleware/upload');
+const { authenticateToken } = require('../middleware/auth');
+const { uploadProfileImage } = require('../middleware/upload');
 const { 
   getProfile, 
   updateProfile, 
-  uploadProfileImage, 
+  uploadProfileImage: uploadProfileImageController, 
   deleteProfileImage 
 } = require('../controllers/profileController');
 
 const router = express.Router();
 
 // All profile routes require authentication
-router.use(auth);
+router.use(authenticateToken);
 
 // Get current user profile
 router.get('/', getProfile);
@@ -20,7 +20,7 @@ router.get('/', getProfile);
 router.put('/', updateProfile);
 
 // Upload profile image
-router.post('/image', upload.single('profileImage'), uploadProfileImage);
+router.post('/image', uploadProfileImage, uploadProfileImageController);
 
 // Delete profile image
 router.delete('/image', deleteProfileImage);

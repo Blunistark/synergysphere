@@ -13,6 +13,7 @@ const projectRoutes = require('./routes/projects');
 const taskRoutes = require('./routes/tasks');
 const notificationRoutes = require('./routes/notifications');
 const fileRoutes = require('./routes/files');
+const profileRoutes = require('./routes/profile');
 
 const app = express();
 const server = createServer(app);
@@ -30,6 +31,9 @@ app.use(cors({
 app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded files
+app.use('/uploads', express.static('uploads'));
 
 // Apply rate limiting to all API routes
 app.use('/api', apiLimiter);
@@ -61,6 +65,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/files', fileRoutes);
+app.use('/api/profile', profileRoutes);
 
 // 404 handler
 app.use((req, res) => {

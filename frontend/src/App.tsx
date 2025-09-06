@@ -14,6 +14,7 @@ import ProjectTasks from "./pages/ProjectTasks";
 import ProjectTeam from "./pages/ProjectTeam";
 import ProjectActivity from "./pages/ProjectActivity";
 import Tasks from "./pages/Tasks";
+import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
@@ -97,6 +98,14 @@ const App = () => (
                 <div className="flex h-screen bg-background">
                   <Sidebar />
                   <Tasks />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <div className="flex h-screen bg-background">
+                  <Sidebar />
+                  <Profile />
                 </div>
               </ProtectedRoute>
             } />

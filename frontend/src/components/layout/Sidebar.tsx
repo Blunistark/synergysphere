@@ -43,11 +43,6 @@ const navigationItems = [
     href: "/users",
     icon: Users,
   },
-  {
-    title: "Project template", 
-    href: "/templates",
-    icon: Folder,
-  },
 ];
 
 export function Sidebar() {
@@ -149,7 +144,9 @@ export function Sidebar() {
               className="w-full justify-start gap-3 px-3 py-3 text-sidebar-foreground hover:bg-sidebar-accent"
             >
               <Avatar className="h-8 w-8">
-                <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || 'User'}`} />
+                <AvatarImage 
+                  src={user?.profileImage ? `${process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : ''}${user.profileImage}` : `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || 'User'}`} 
+                />
                 <AvatarFallback>
                   {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
                 </AvatarFallback>
@@ -161,9 +158,11 @@ export function Sidebar() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem>
-              <User className="h-4 w-4 mr-2" />
-              Profile
+            <DropdownMenuItem asChild>
+              <Link to="/profile" className="flex items-center">
+                <User className="h-4 w-4 mr-2" />
+                Profile
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Settings className="h-4 w-4 mr-2" />

@@ -5,6 +5,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  profileImage?: string;
   createdAt: string;
 }
 
@@ -15,6 +16,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (userData: User, token: string) => void;
   logout: () => void;
+  updateUser: (userData: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -73,6 +75,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('user');
   };
 
+  const updateUser = (userData: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...userData };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+  };
+
   const value: AuthContextType = {
     user,
     token,
@@ -80,6 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     login,
     logout,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
