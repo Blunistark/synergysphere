@@ -1,7 +1,6 @@
 import { 
   Search, 
   Settings, 
-  Bell, 
   HelpCircle, 
   Moon, 
   Sun, 
@@ -22,7 +21,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
+import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown";
 import { useState } from "react";
 
 interface HeaderProps {
@@ -31,7 +30,6 @@ interface HeaderProps {
 
 export function Header({ title }: HeaderProps) {
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
-  const [notifications, setNotifications] = useState(true);
 
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
     setTheme(newTheme);
@@ -39,14 +37,19 @@ export function Header({ title }: HeaderProps) {
     console.log('Theme changed to:', newTheme);
   };
 
-  const handleNotificationToggle = () => {
-    setNotifications(!notifications);
-    console.log('Notifications:', !notifications ? 'enabled' : 'disabled');
-  };
-
   const handleHelp = () => {
     console.log('Opening help documentation');
     // TODO: Open help modal or navigate to help page
+  };
+
+  const handlePrivacySettings = () => {
+    console.log('Opening privacy settings');
+    // TODO: Open privacy settings modal
+  };
+
+  const handleLanguageSettings = () => {
+    console.log('Opening language settings');
+    // TODO: Open language settings modal
   };
 
   const handlePrivacySettings = () => {
@@ -77,14 +80,7 @@ export function Header({ title }: HeaderProps) {
         </div>
 
         {/* Notifications */}
-        <Button variant="ghost" size="sm" className="relative">
-          <Bell className="h-5 w-5" />
-          {notifications && (
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500">
-              3
-            </Badge>
-          )}
-        </Button>
+        <NotificationsDropdown />
 
         {/* Help */}
         <Button variant="ghost" size="sm" onClick={handleHelp}>
@@ -125,13 +121,6 @@ export function Header({ title }: HeaderProps) {
             </DropdownMenuSub>
 
             <DropdownMenuSeparator />
-
-            {/* Notification Settings */}
-            <DropdownMenuItem onClick={handleNotificationToggle}>
-              <Bell className="mr-2 h-4 w-4" />
-              <span>Notifications</span>
-              <span className="ml-auto">{notifications ? '✓' : ''}</span>
-            </DropdownMenuItem>
 
             {/* Language Settings */}
             <DropdownMenuItem onClick={handleLanguageSettings}>
