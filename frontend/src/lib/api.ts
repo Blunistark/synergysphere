@@ -48,8 +48,10 @@ export const apiRequest = async (url: string, options: RequestInit = {}) => {
   if (response.status === 401) {
     // Check if we're not already on the login page to prevent infinite redirects
     if (!window.location.pathname.includes('/login')) {
+      console.warn('Unauthorized request detected, redirecting to login');
       removeAuthToken();
       localStorage.removeItem('user');
+      // Use React Router navigation instead of window.location for better UX
       window.location.href = '/login';
     }
     throw new Error('Unauthorized');

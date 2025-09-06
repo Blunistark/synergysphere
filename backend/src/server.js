@@ -24,7 +24,7 @@ const io = initializeWebSocket(server);
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || ['http://localhost:3000', 'http://localhost:8080'],
+  origin: process.env.CORS_ORIGIN || ['http://localhost:3000', 'http://localhost:8080','http://192.168.1.104:8080'],
   credentials: true
 }));
 app.use(morgan('combined'));

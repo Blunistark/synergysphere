@@ -8,6 +8,11 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
+import ProjectDetail from "./pages/ProjectDetail";
+import ProjectDashboardPage from "./pages/ProjectDashboardPage";
+import ProjectTasks from "./pages/ProjectTasks";
+import ProjectTeam from "./pages/ProjectTeam";
+import ProjectActivity from "./pages/ProjectActivity";
 import Tasks from "./pages/Tasks";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -23,8 +28,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Redirect root to login */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            {/* Redirect root to dashboard */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             
             {/* Auth routes without sidebar */}
             <Route path="/login" element={<Login />} />
@@ -44,6 +49,46 @@ const App = () => (
                 <div className="flex h-screen bg-background">
                   <Sidebar />
                   <Projects />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/projects/:id" element={
+              <ProtectedRoute>
+                <div className="flex h-screen bg-background">
+                  <Sidebar />
+                  <ProjectDetail />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/projects/:id/dashboard" element={
+              <ProtectedRoute>
+                <div className="flex h-screen bg-background">
+                  <Sidebar />
+                  <ProjectDashboardPage />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/projects/:id/tasks" element={
+              <ProtectedRoute>
+                <div className="flex h-screen bg-background">
+                  <Sidebar />
+                  <ProjectTasks />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/projects/:id/team" element={
+              <ProtectedRoute>
+                <div className="flex h-screen bg-background">
+                  <Sidebar />
+                  <ProjectTeam />
+                </div>
+              </ProtectedRoute>
+            } />
+            <Route path="/projects/:id/activity" element={
+              <ProtectedRoute>
+                <div className="flex h-screen bg-background">
+                  <Sidebar />
+                  <ProjectActivity />
                 </div>
               </ProtectedRoute>
             } />

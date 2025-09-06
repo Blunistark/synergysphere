@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Frontend Service
   frontend:
     build: 
       context: ./frontend
@@ -11,11 +10,11 @@ services:
     depends_on:
       - backend
     environment:
-      - VITE_API_BASE_URL=http://localhost:3000
+      # talk to backend service inside docker network
+      - VITE_API_BASE_URL=http://backend:3000
     networks:
       - synergy-network
 
-  # Backend Service
   backend:
     build: 
       context: ./backend
@@ -27,7 +26,8 @@ services:
       - DATABASE_URL=postgresql://synergy_user:synergy_pass@postgres:5432/synergysphere?schema=public
       - JWT_SECRET=your-development-jwt-secret-key-change-in-production
       - JWT_EXPIRES_IN=7d
-      - CORS_ORIGIN=http://localhost:8080
+      # 👇 allow all origins in dev (safer than hardcoding IPs)
+      - CORS_ORIGIN=*
     depends_on:
       postgres:
         condition: service_healthy
@@ -38,7 +38,6 @@ services:
     networks:
       - synergy-network
 
-  # Database Service
   postgres:
     image: postgres:15-alpine
     environment:

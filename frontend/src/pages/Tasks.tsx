@@ -1,101 +1,113 @@
+import { useState, useEffect } from "react";
 import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Calendar, User } from "lucide-react";
+import { dashboardService, Task } from "@/lib/dashboardService";
 
-const columns = [
-  {
-    title: "Backlog Tasks",
-    count: 5,
-    color: "bg-orange-500",
-    tasks: [
-      {
-        id: "UID007",
-        title: "Model Answer",
-        tag: "Design",
-        tagColor: "bg-purple-500",
-        priority: 4,
-        assignees: ["JD", "SM"],
-      },
-      {
-        id: "UID003", 
-        title: "Create calendar, chat and email app pages",
-        tag: "Development",
-        tagColor: "bg-pink-500",
-        priority: 5,
-        assignees: ["JD", "SM"],
-      },
-    ],
-  },
-  {
-    title: "To Do Tasks", 
-    count: 3,
-    color: "bg-blue-500",
-    tasks: [
-      {
-        id: "UID005",
-        title: "Model Answer",
-        tag: "To Do",
-        tagColor: "bg-red-500",
-        priority: 1,
-        assignees: ["AB", "CD"],
-      },
-      {
-        id: "UID006",
-        title: "Add authentication pages", 
-        tag: "To Do",
-        tagColor: "bg-red-500",
-        priority: null,
-        assignees: ["EF"],
-      },
-    ],
-  },
-  {
-    title: "In Process",
-    count: 2, 
-    color: "bg-purple-500",
-    tasks: [
-      {
-        id: "UID002",
-        title: "Model Answer",
-        tag: "In Process", 
-        tagColor: "bg-purple-500",
-        priority: 1,
-        assignees: ["GH", "IJ"],
-      },
-    ],
-  },
-  {
-    title: "Done",
-    count: 5,
-    color: "bg-green-500", 
-    tasks: [
-      {
-        id: "UID002",
-        title: "Model Answer",
-        tag: "Done",
-        tagColor: "bg-green-500",
-        priority: 1,
-        assignees: ["KL", "MN"],
-      },
-      {
-        id: "UID002",
-        title: "Create calendar, chat and email app pages",
-        tag: "Done", 
-        tagColor: "bg-green-500",
-        priority: null,
-        assignees: ["OP"],
-      },
-    ],
-  },
-];
+interface TaskColumn {
+  title: string;
+  status: string;
+  color: string;
+  tasks: Task[];
+}
 
 export default function Tasks() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchUserTasks();
+  }, []);
+
+  const fetchUserTasks = async () => {
+    try {
+      setLoading(true);
+      const response = await dashboardService.getUserTasks();
+      setTasks(response.tasks);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch tasks');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Group tasks by status
+  const organizeTasksByStatus = (tasks: Task[]): TaskColumn[] => {
+    const statusConfig = [
+      { title: "To Do", status: "todo", color: "bg-blue-500" },
+      { title: "In Progress", status: "in_progress", color: "bg-purple-500" },
+      { title: "Review", status: "review", color: "bg-orange-500" },
+      { title: "Done", status: "completed", color: "bg-green-500" },
+    ];
+
+    return statusConfig.map(config => ({
+      ...config,
+      tasks: tasks.filter(task => task.status === config.status)
+    }));
+  };
+
+  const columns = organizeTasksByStatus(tasks);
+
+  const getPriorityColor = (priority?: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-500';
+      case 'medium': return 'bg-yellow-500';
+      case 'low': return 'bg-green-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  const getPriorityNumber = (priority?: string) => {
+    switch (priority) {
+      case 'high': return '1';
+      case 'medium': return '2';
+      case 'low': return '3';
+      default: return '';
+    }
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header title="My Tasks" />
+        <main className="flex-1 overflow-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-muted-foreground">Loading your tasks...</div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header title="My Tasks" />
+        <main className="flex-1 overflow-auto p-6">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-red-500">Error: {error}</div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <Header title="Tasks" />
+      <Header title="My Tasks" />
       
       <main className="flex-1 overflow-auto p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -106,26 +118,26 @@ export default function Tasks() {
                 <div className="flex items-center gap-2">
                   <h3 className="font-medium">{column.title}</h3>
                   <Badge variant="secondary" className={`${column.color} text-white`}>
-                    {column.count}
+                    {column.tasks.length}
                   </Badge>
                 </div>
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                  <Plus className="h-4 w-4" />
-                </Button>
               </div>
 
               {/* Tasks */}
               <div className="space-y-3">
-                {column.tasks.map((task, index) => (
-                  <Card key={`${task.id}-${index}`} className="shadow-card hover:shadow-elevated transition-all duration-300">
+                {column.tasks.map((task) => (
+                  <Card key={task.id} className="shadow-card hover:shadow-elevated transition-all duration-300">
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between gap-2">
                         <CardTitle className="text-sm font-medium leading-relaxed">
                           {task.title}
                         </CardTitle>
                         {task.priority && (
-                          <Badge variant="outline" className="h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs">
-                            {task.priority}
+                          <Badge 
+                            variant="outline" 
+                            className={`h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs text-white ${getPriorityColor(task.priority)}`}
+                          >
+                            {getPriorityNumber(task.priority)}
                           </Badge>
                         )}
                       </div>
@@ -135,36 +147,49 @@ export default function Tasks() {
                         <span className="text-xs text-muted-foreground">#{task.id}</span>
                         <Badge 
                           variant="secondary"
-                          className={`${task.tagColor} text-white text-xs`}
+                          className={`${column.color} text-white text-xs`}
                         >
-                          {task.tag}
+                          {column.title}
                         </Badge>
                       </div>
                       
-                      <div className="flex items-center gap-2">
-                        {task.assignees.map((assignee, i) => (
-                          <Avatar key={i} className="h-6 w-6">
+                      {/* Project Info */}
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <User className="h-3 w-3" />
+                        <span>{task.project.name}</span>
+                      </div>
+                      
+                      {/* Due Date */}
+                      {task.dueDate && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          <span>Due {formatDate(task.dueDate)}</span>
+                        </div>
+                      )}
+                      
+                      {/* Assignee (current user) */}
+                      {task.assignee && (
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-6 w-6">
                             <AvatarFallback className="text-xs">
-                              {assignee}
+                              {task.assignee.name.substring(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
-                        ))}
-                        {task.assignees.length > 0 && (
-                          <span className="text-xs text-muted-foreground">+{task.assignees.length}</span>
-                        )}
-                      </div>
+                          <span className="text-xs text-muted-foreground">
+                            {task.assignee.name}
+                          </span>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
                 
-                {/* Add Task Button */}
-                <Button 
-                  variant="ghost" 
-                  className="w-full h-12 border-2 border-dashed border-muted-foreground/25 hover:border-primary hover:bg-primary/5"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Task
-                </Button>
+                {/* Empty State */}
+                {column.tasks.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground text-sm">
+                    No {column.title.toLowerCase()} tasks
+                  </div>
+                )}
               </div>
             </div>
           ))}

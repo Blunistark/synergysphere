@@ -10,7 +10,7 @@ services:
       - DATABASE_URL=postgresql://synergy_user:synergy_pass@postgres:5432/synergysphere?schema=public
       - JWT_SECRET=your-production-jwt-secret-key-change-this-now
       - JWT_EXPIRES_IN=7d
-      - CORS_ORIGIN=http://localhost:3000
+      - CORS_ORIGIN=*
     depends_on:
       postgres:
         condition: service_healthy

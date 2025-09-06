@@ -1,34 +1,63 @@
-import { Search, ChevronDown, LogOut } from "lucide-react";
+import { 
+  Search, 
+  Settings, 
+  Bell, 
+  HelpCircle, 
+  Moon, 
+  Sun, 
+  Monitor,
+  Palette,
+  Globe,
+  Shield
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 
 interface HeaderProps {
   title: string;
 }
 
 export function Header({ title }: HeaderProps) {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
+  const [notifications, setNotifications] = useState(true);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
+    setTheme(newTheme);
+    // TODO: Implement actual theme switching logic
+    console.log('Theme changed to:', newTheme);
   };
 
-  const userInitials = user?.name
-    ?.split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase() || 'U';
+  const handleNotificationToggle = () => {
+    setNotifications(!notifications);
+    console.log('Notifications:', !notifications ? 'enabled' : 'disabled');
+  };
+
+  const handleHelp = () => {
+    console.log('Opening help documentation');
+    // TODO: Open help modal or navigate to help page
+  };
+
+  const handlePrivacySettings = () => {
+    console.log('Opening privacy settings');
+    // TODO: Open privacy settings modal
+  };
+
+  const handleLanguageSettings = () => {
+    console.log('Opening language settings');
+    // TODO: Open language settings modal
+  };
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-background px-6">
@@ -47,30 +76,84 @@ export function Header({ title }: HeaderProps) {
           />
         </div>
 
-        {/* User Menu */}
-        <div className="flex items-center gap-3">
-          <div className="text-right">
-            <p className="text-sm font-medium">{user?.name || 'User'}</p>
-            <p className="text-xs text-muted-foreground">{user?.email || 'user@example.com'}</p>
-          </div>
-          <Avatar className="h-10 w-10">
-            <AvatarImage src="" alt={user?.name} />
-            <AvatarFallback>{userInitials}</AvatarFallback>
-          </Avatar>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        {/* Notifications */}
+        <Button variant="ghost" size="sm" className="relative">
+          <Bell className="h-5 w-5" />
+          {notifications && (
+            <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-red-500">
+              3
+            </Badge>
+          )}
+        </Button>
+
+        {/* Help */}
+        <Button variant="ghost" size="sm" onClick={handleHelp}>
+          <HelpCircle className="h-5 w-5" />
+        </Button>
+
+        {/* Application Settings */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <Settings className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            {/* Theme Settings */}
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Palette className="mr-2 h-4 w-4" />
+                <span>Theme</span>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem onClick={() => handleThemeChange('light')}>
+                  <Sun className="mr-2 h-4 w-4" />
+                  <span>Light</span>
+                  {theme === 'light' && <span className="ml-auto">✓</span>}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleThemeChange('dark')}>
+                  <Moon className="mr-2 h-4 w-4" />
+                  <span>Dark</span>
+                  {theme === 'dark' && <span className="ml-auto">✓</span>}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleThemeChange('system')}>
+                  <Monitor className="mr-2 h-4 w-4" />
+                  <span>System</span>
+                  {theme === 'system' && <span className="ml-auto">✓</span>}
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+
+            <DropdownMenuSeparator />
+
+            {/* Notification Settings */}
+            <DropdownMenuItem onClick={handleNotificationToggle}>
+              <Bell className="mr-2 h-4 w-4" />
+              <span>Notifications</span>
+              <span className="ml-auto">{notifications ? '✓' : ''}</span>
+            </DropdownMenuItem>
+
+            {/* Language Settings */}
+            <DropdownMenuItem onClick={handleLanguageSettings}>
+              <Globe className="mr-2 h-4 w-4" />
+              <span>Language</span>
+            </DropdownMenuItem>
+
+            {/* Privacy Settings */}
+            <DropdownMenuItem onClick={handlePrivacySettings}>
+              <Shield className="mr-2 h-4 w-4" />
+              <span>Privacy & Security</span>
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            {/* General Settings */}
+            <DropdownMenuItem>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>General Settings</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
