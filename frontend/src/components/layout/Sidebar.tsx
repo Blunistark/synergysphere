@@ -84,6 +84,17 @@ export function Sidebar() {
 
   const currentNavigationItems = isProjectPage ? projectNavigationItems : navigationItems;
 
+  const getImageUrl = (imagePath?: string) => {
+    if (!imagePath) return '';
+    if (imagePath.startsWith('http')) return imagePath;
+    // Use relative URL that will go through nginx proxy in Docker
+    if (window.location.hostname === 'localhost' && window.location.port === '3000') {
+      return `http://localhost:3000${imagePath}`;
+    } else {
+      return imagePath;
+    }
+  };
+
   return (
     <div className="flex h-screen w-64 flex-col bg-sidebar">
       {/* Header - Simplified */}
@@ -145,7 +156,7 @@ export function Sidebar() {
             >
               <Avatar className="h-8 w-8">
                 <AvatarImage 
-                  src={user?.profileImage ? `${process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : ''}${user.profileImage}` : `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || 'User'}`} 
+                  src={user?.profileImage ? getImageUrl(user.profileImage) : `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name || 'User'}`} 
                 />
                 <AvatarFallback>
                   {user?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
