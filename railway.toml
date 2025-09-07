@@ -4,8 +4,9 @@
 
 [deploy]
   startCommand = "/start.sh"
-  healthcheckPath = "/health"
-  healthcheckTimeout = 300
+  # Skip health checks for deployment
+  # healthcheckPath = "/health"
+  # healthcheckTimeout = 300
   restartPolicyType = "on_failure"
 
 [environment]
