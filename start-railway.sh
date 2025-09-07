@@ -31,13 +31,21 @@ echo "🔧 Starting backend server on port 3000..."
 npm start &
 BACKEND_PID=$!
 
-# Wait a moment for backend to start
-sleep 10
-
-# Check if backend is running
-if ! curl -f http://localhost:3000/health > /dev/null 2>&1; then
-    echo "⚠️  Backend health check failed, but continuing..."
-fi
+# Wait for backend to be ready with retries
+echo "⏳ Waiting for backend to be ready..."
+for i in {1..30}; do
+    if curl -f http://localhost:3000/health > /dev/null 2>&1; then
+        echo "✅ Backend is ready!"
+        break
+    fi
+    if [ $i -eq 30 ]; then
+        echo "❌ Backend failed to start after 60 seconds"
+        kill $BACKEND_PID 2>/dev/null || true
+        exit 1
+    fi
+    echo "⏳ Attempt $i/30: Backend not ready, waiting 2 seconds..."
+    sleep 2
+done
 
 # Start nginx in foreground
 echo "🌐 Starting nginx reverse proxy on port 8080..."
