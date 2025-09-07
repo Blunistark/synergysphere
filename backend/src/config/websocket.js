@@ -7,7 +7,7 @@ let io;
 const initializeWebSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+      origin: process.env.CORS_ORIGIN || ['http://localhost:3000', 'https://projectmanagement.wewake.in'],
       methods: ['GET', 'POST'],
       credentials: true
     }

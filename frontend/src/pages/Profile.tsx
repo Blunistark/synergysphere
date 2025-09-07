@@ -187,7 +187,7 @@ export default function Profile() {
     // Use relative URL that will go through nginx proxy in Docker, or direct backend URL in development
     if (window.location.hostname === 'localhost' && window.location.port === '3000') {
       // Direct Vite dev server
-      return `http://localhost:3000${imagePath}`;
+      return `https://projectmanagement.wewake.in${imagePath}`;
     } else {
       // Docker/nginx proxy or production - use relative URL
       return imagePath;

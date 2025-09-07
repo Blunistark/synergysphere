@@ -95,7 +95,7 @@ export function Sidebar() {
     if (imagePath.startsWith('http')) return imagePath;
     // Use relative URL that will go through nginx proxy in Docker
     if (window.location.hostname === 'localhost' && window.location.port === '3000') {
-      return `http://localhost:3000${imagePath}`;
+      return `https://projectmanagement.wewake.in${imagePath}`;
     } else {
       return imagePath;
     }
