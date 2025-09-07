@@ -10,16 +10,19 @@ WORKDIR /app
 COPY frontend/package*.json ./frontend/
 COPY backend/package*.json ./backend/
 
-# Install dependencies
-RUN cd frontend && npm ci --only=production
+# Install dependencies (including dev dependencies for build)
+RUN cd frontend && npm ci
 RUN cd backend && npm ci --only=production
 
 # Copy source code
 COPY frontend/ ./frontend/
 COPY backend/ ./backend/
 
-# Build frontend
+# Build frontend (now that we have all dependencies including Vite)
 RUN cd frontend && npm run build
+
+# Remove frontend dev dependencies after build to reduce image size
+RUN cd frontend && npm prune --production
 
 # Generate Prisma client
 RUN cd backend && npx prisma generate
