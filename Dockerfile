@@ -18,16 +18,6 @@ RUN cd backend && npm ci --only=production
 COPY frontend/ ./frontend/
 COPY backend/ ./backend/
 
-# Debug: List files to verify copy
-RUN echo "=== Frontend lib directory ===" && \
-    ls -la ./frontend/src/lib/ && \
-    echo "=== dashboardService.ts content preview ===" && \
-    head -5 ./frontend/src/lib/dashboardService.ts && \
-    echo "=== Working directory ===" && \
-    pwd && \
-    echo "=== Node version ===" && \
-    node --version
-
 # Build frontend (now that we have all dependencies including Vite)
 RUN cd frontend && npm run build
 

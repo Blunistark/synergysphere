@@ -9,7 +9,7 @@ import { ThemeDemo } from "@/components/ui/theme-demo";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FolderOpen, Clock, Users, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { dashboardService, DashboardStats } from "@/lib/dashboardService.ts";
+import { dashboardService, DashboardStats } from "@/lib/dashboardService";
 import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
