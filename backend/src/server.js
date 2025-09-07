@@ -18,7 +18,7 @@ const healthRoutes = require('./routes/health');
 
 const app = express();
 const server = createServer(app);
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.BACKEND_PORT || process.env.PORT || 3000;
 
 // Initialize WebSocket
 const io = initializeWebSocket(server);
