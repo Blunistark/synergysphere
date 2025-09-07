@@ -18,6 +18,9 @@ RUN cd backend && npm ci --only=production
 COPY frontend/ ./frontend/
 COPY backend/ ./backend/
 
+# Debug: List files to verify copy
+RUN ls -la ./frontend/src/lib/
+
 # Build frontend (now that we have all dependencies including Vite)
 RUN cd frontend && npm run build
 
