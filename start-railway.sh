@@ -52,7 +52,8 @@ curl -f http://localhost:8080/health && echo "✅ Nginx health check OK" || echo
 # Start backend in background
 echo "🔧 Starting backend server on port 3000..."
 cd /app/backend
-npm start &
+# Override PORT environment variable for backend
+PORT=3000 npm start &
 BACKEND_PID=$!
 
 # Wait for backend to be ready with retries
