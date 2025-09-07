@@ -1,11 +1,7 @@
 const express = require('express');
-const { authLimiter } = require('../middleware/rateLimiter');
 const { register, login } = require('../controllers/authController');
 
 const router = express.Router();
-
-// Apply strict rate limiting to auth routes
-router.use(authLimiter);
 
 /**
  * @swagger

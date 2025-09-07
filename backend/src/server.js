@@ -5,7 +5,6 @@ const morgan = require('morgan');
 const { createServer } = require('http');
 require('dotenv').config();
 
-const { apiLimiter } = require('./middleware/rateLimiter');
 const { swaggerUi, specs } = require('./config/swagger');
 const { initializeWebSocket } = require('./config/websocket');
 const authRoutes = require('./routes/auth');
@@ -45,9 +44,6 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded files
 app.use('/uploads', express.static('uploads'));
-
-// Apply rate limiting to all API routes
-app.use('/api', apiLimiter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
