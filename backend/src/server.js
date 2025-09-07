@@ -14,6 +14,7 @@ const taskRoutes = require('./routes/tasks');
 const notificationRoutes = require('./routes/notifications');
 const fileRoutes = require('./routes/files');
 const profileRoutes = require('./routes/profile');
+const healthRoutes = require('./routes/health');
 
 const app = express();
 const server = createServer(app);

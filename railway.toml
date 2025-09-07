@@ -1,0 +1,12 @@
+[build]
+  builder = "dockerfile"
+  dockerfilePath = "Dockerfile"
+
+[deploy]
+  startCommand = "/start.sh"
+  healthcheckPath = "/health"
+  healthcheckTimeout = 300
+  restartPolicyType = "on_failure"
+
+[environment]
+  NODE_ENV = "production"

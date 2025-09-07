@@ -1,0 +1,20 @@
+{
+  "name": "synergysphere",
+  "version": "1.0.0",
+  "description": "SynergySphere - Team Collaboration Platform",
+  "main": "backend/src/server.js",
+  "scripts": {
+    "start": "cd backend && npm start",
+    "build": "cd frontend && npm run build",
+    "dev": "docker-compose up",
+    "railway:build": "npm run build",
+    "railway:start": "/start.sh"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": ["project-management", "collaboration", "react", "nodejs"],
+  "author": "Your Name",
+  "license": "MIT"
+}
