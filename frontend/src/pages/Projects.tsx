@@ -4,6 +4,7 @@ import { Header } from "@/components/layout/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { CreateProjectModal } from "@/components/modals/CreateProjectModal";
 import { EditProjectModal } from "@/components/modals/EditProjectModal";
@@ -337,12 +338,7 @@ export default function Projects() {
                         <span>Progress</span>
                         <span>{project.taskProgress?.percentage || 0}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className={`bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300`}
-                          style={{ width: `${project.taskProgress?.percentage || 0}%` }}
-                        ></div>
-                      </div>
+                      <ProgressBar percentage={project.taskProgress?.percentage || 0} />
                     </div>
                     
                     {/* Deadline Warning */}

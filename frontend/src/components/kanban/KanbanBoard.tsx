@@ -95,6 +95,22 @@ const normalizeStatus = (status: string): string => {
   }
 };
 
+// Function to convert normalized status back to backend format
+const denormalizeStatus = (status: string): string => {
+  switch (status) {
+    case 'todo':
+      return 'To-Do';
+    case 'in-progress':
+      return 'In Progress';
+    case 'review':
+      return 'In Review';
+    case 'done':
+      return 'Done';
+    default:
+      return status;
+  }
+};
+
 export function KanbanBoard({ tasks, onTaskStatusChange, onTaskClick }: KanbanBoardProps) {
   const { toast } = useToast();
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
@@ -128,7 +144,8 @@ export function KanbanBoard({ tasks, onTaskStatusChange, onTaskClick }: KanbanBo
   const handleDrop = (e: React.DragEvent, targetStatus: string) => {
     e.preventDefault();
     if (draggedTask && draggedTask.status !== targetStatus) {
-      onTaskStatusChange(draggedTask.id, targetStatus);
+      const backendStatus = denormalizeStatus(targetStatus);
+      onTaskStatusChange(draggedTask.id, backendStatus);
       toast({
         title: "Task Updated",
         description: `Task moved to ${statusConfig[targetStatus as keyof typeof statusConfig].title}`,
@@ -138,7 +155,8 @@ export function KanbanBoard({ tasks, onTaskStatusChange, onTaskClick }: KanbanBo
   };
 
   const handleStatusChange = (taskId: number, newStatus: string) => {
-    onTaskStatusChange(taskId, newStatus);
+    const backendStatus = denormalizeStatus(newStatus);
+    onTaskStatusChange(taskId, backendStatus);
     toast({
       title: "Task Updated",
       description: `Task status changed to ${statusConfig[newStatus as keyof typeof statusConfig].title}`,

@@ -132,8 +132,8 @@ export default function ProjectDetail() {
         task.id === taskId ? { ...task, status: newStatus } : task
       ));
       
-      // TODO: Add API call to update task status
-      // await dashboardService.updateTaskStatus(taskId, newStatus);
+      // Make API call to update task status
+      await dashboardService.updateTaskStatus(taskId, newStatus);
       
       // Refresh project data to update task progress
       await fetchProjectDetail(id!);

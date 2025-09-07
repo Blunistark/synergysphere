@@ -24,7 +24,8 @@ import {
   Clock,
   AlertTriangle,
   List,
-  LayoutGrid
+  LayoutGrid,
+  Circle
 } from "lucide-react";
 import { dashboardService, Project, Task } from "@/lib/dashboardService";
 import { Loader2 } from "lucide-react";
@@ -65,7 +66,7 @@ export default function ProjectTasks() {
     }
     
     if (statusFilter !== "all") {
-      filtered = filtered.filter(task => task.status === statusFilter);
+      filtered = filtered.filter(task => normalizeStatus(task.status) === statusFilter);
     }
     
     console.log('Filtered tasks:', filtered);
@@ -131,11 +132,17 @@ export default function ProjectTasks() {
         )
       );
 
-      // In a real app, you would make an API call here
-      // await dashboardService.updateTaskStatus(taskId, newStatus);
+      // Make the API call to update the task status
+      await dashboardService.updateTaskStatus(taskId, newStatus);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Refresh the project data to get updated progress
+      if (id) {
+        const projectResponse = await dashboardService.getProjects();
+        const updatedProject = projectResponse.projects.find(p => p.id === parseInt(id));
+        if (updatedProject) {
+          setProject(updatedProject);
+        }
+      }
       
       console.log(`Task ${taskId} status updated to ${newStatus}`);
     } catch (err) {
@@ -226,12 +233,49 @@ export default function ProjectTasks() {
     );
   }
 
+  // Function to normalize status (same as KanbanBoard)
+  const normalizeStatus = (status: string): string => {
+    const normalized = status.toLowerCase().trim().replace(/\s+/g, '-');
+    
+    switch (normalized) {
+      case 'to-do':
+      case 'todo':
+      case 'pending':
+      case 'new':
+        return 'pending';
+      case 'in-progress':
+      case 'in_progress':
+      case 'inprogress':
+      case 'active':
+      case 'working':
+        return 'in_progress';
+      case 'in-review':
+      case 'in_review':
+      case 'review':
+      case 'reviewing':
+        return 'review';
+      case 'done':
+      case 'completed':
+      case 'finished':
+      case 'closed':
+        return 'completed';
+      default:
+        return normalized;
+    }
+  };
+
   const taskStats = {
     total: tasks.length,
-    completed: tasks.filter(t => t.status === 'completed').length,
-    inProgress: tasks.filter(t => t.status === 'in_progress').length,
-    pending: tasks.filter(t => t.status === 'pending').length,
+    completed: tasks.filter(t => normalizeStatus(t.status) === 'completed').length,
+    inProgress: tasks.filter(t => normalizeStatus(t.status) === 'in_progress').length,
+    pending: tasks.filter(t => normalizeStatus(t.status) === 'pending').length,
+    review: tasks.filter(t => normalizeStatus(t.status) === 'review').length,
   };
+
+  // Debug: Log actual statuses and stats
+  console.log('Task statuses from backend:', tasks.map(t => ({ id: t.id, status: t.status, normalized: normalizeStatus(t.status) })));
+  console.log('Task stats calculation:', taskStats);
+  console.log('Unique statuses:', [...new Set(tasks.map(t => t.status))]);
 
   // Create custom breadcrumbs
   const breadcrumbs: BreadcrumbItem[] = project ? [
@@ -290,10 +334,10 @@ export default function ProjectTasks() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-600">{taskStats.pending}</p>
+                  <p className="text-sm font-medium text-muted-foreground">In Review</p>
+                  <p className="text-2xl font-bold text-orange-600">{taskStats.review}</p>
                 </div>
-                <AlertTriangle className="w-8 h-8 text-yellow-500" />
+                <AlertTriangle className="w-8 h-8 text-orange-500" />
               </div>
             </CardContent>
           </Card>
@@ -320,8 +364,9 @@ export default function ProjectTasks() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Tasks</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="pending">To Do</SelectItem>
                     <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="review">In Review</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                   </SelectContent>
                 </Select>

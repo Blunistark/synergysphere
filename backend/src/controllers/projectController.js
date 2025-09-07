@@ -83,7 +83,10 @@ const getUserProjects = async (req, res) => {
     // Add task progress summary
     const projectsWithProgress = projects.map(project => {
       const totalTasks = project.tasks.length;
-      const completedTasks = project.tasks.filter(task => task.status === 'Done').length;
+      const completedTasks = project.tasks.filter(task => {
+        const status = task.status.toLowerCase();
+        return status === 'done' || status === 'completed' || status === 'finished' || status === 'closed';
+      }).length;
       const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
       return {
