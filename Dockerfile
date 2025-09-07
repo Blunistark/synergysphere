@@ -34,7 +34,7 @@ COPY nginx.railway.conf /etc/nginx/nginx.conf
 COPY start-railway.sh /start.sh
 RUN chmod +x /start.sh && \
     # Test script syntax
-    bash -n /start.sh && \
+    sh -n /start.sh && \
     echo "✅ Startup script syntax is valid"
 
 # Expose port (Railway automatically detects this)

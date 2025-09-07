@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 echo "🚀 Starting SynergySphere on Railway..."
@@ -57,7 +57,8 @@ BACKEND_PID=$!
 
 # Wait for backend to be ready with retries
 echo "⏳ Waiting for backend to be ready..."
-for i in {1..30}; do
+i=1
+while [ $i -le 30 ]; do
     if curl -f http://localhost:3000/health > /dev/null 2>&1; then
         echo "✅ Backend is ready!"
         break
@@ -68,6 +69,7 @@ for i in {1..30}; do
     fi
     echo "⏳ Attempt $i/30: Backend not ready, waiting 2 seconds..."
     sleep 2
+    i=$((i + 1))
 done
 
 # Start nginx in foreground
