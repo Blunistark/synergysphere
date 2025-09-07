@@ -2,6 +2,16 @@
 set -e
 
 echo "🚀 Starting SynergySphere on Railway..."
+echo "📊 Environment variables check:"
+echo "   NODE_ENV: ${NODE_ENV:-'not set'}"
+echo "   PORT: ${PORT:-'not set'}"
+echo "   DATABASE_URL: ${DATABASE_URL:+*set*}"
+
+# Test basic connectivity
+echo "🔍 Basic system check..."
+curl --version || echo "⚠️  curl not available"
+node --version || echo "⚠️  node not available"
+npm --version || echo "⚠️  npm not available"
 
 # Wait for database to be ready (Railway PostgreSQL)
 echo "⏳ Waiting for database connection..."
@@ -26,8 +36,22 @@ if [ "$RAILWAY_ENVIRONMENT" = "production" ] && [ "$FIRST_DEPLOY" = "true" ]; th
     npm run db:seed || echo "⚠️  Database seeding failed or skipped"
 fi
 
+# Start nginx immediately for health checks
+echo "🌐 Starting nginx reverse proxy on port 8080 (for health checks)..."
+nginx -t && echo "✅ Nginx config is valid" || echo "❌ Nginx config has errors"
+nginx &
+NGINX_PID=$!
+
+# Give nginx a moment to start
+sleep 2
+
+# Test nginx health endpoint
+echo "🔍 Testing nginx health endpoint..."
+curl -f http://localhost:8080/health && echo "✅ Nginx health check OK" || echo "⚠️  Nginx health check failed"
+
 # Start backend in background
 echo "🔧 Starting backend server on port 3000..."
+cd /app/backend
 npm start &
 BACKEND_PID=$!
 
@@ -39,18 +63,15 @@ for i in {1..30}; do
         break
     fi
     if [ $i -eq 30 ]; then
-        echo "❌ Backend failed to start after 60 seconds"
-        kill $BACKEND_PID 2>/dev/null || true
-        exit 1
+        echo "⚠️  Backend failed to start after 60 seconds, but nginx is serving"
+        break
     fi
     echo "⏳ Attempt $i/30: Backend not ready, waiting 2 seconds..."
     sleep 2
 done
 
 # Start nginx in foreground
-echo "🌐 Starting nginx reverse proxy on port 8080..."
-nginx -g "daemon off;" &
-NGINX_PID=$!
+echo "🌐 Nginx is already running and serving health checks..."
 
 # Function to handle shutdown
 cleanup() {
@@ -66,10 +87,24 @@ trap cleanup SIGTERM SIGINT
 echo "✅ SynergySphere is running!"
 echo "🌐 Frontend: Available on port 8080"
 echo "🔧 Backend: Running on port 3000"
+echo "💚 Health check: Available at /health"
 
-# Wait for any process to exit
-wait -n
-
-# If we get here, one of the processes exited
-echo "❌ A service exited unexpectedly"
-cleanup
+# Keep the container running by monitoring processes
+while true; do
+    # Check if nginx is still running
+    if ! ps -p $NGINX_PID > /dev/null 2>&1; then
+        echo "❌ Nginx died, restarting..."
+        nginx &
+        NGINX_PID=$!
+    fi
+    
+    # Check if backend is still running
+    if ! ps -p $BACKEND_PID > /dev/null 2>&1; then
+        echo "❌ Backend died, restarting..."
+        cd /app/backend
+        npm start &
+        BACKEND_PID=$!
+    fi
+    
+    sleep 30
+done

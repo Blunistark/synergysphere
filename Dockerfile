@@ -30,15 +30,19 @@ RUN cd backend && npx prisma generate
 # Copy nginx configuration for Railway
 COPY nginx.railway.conf /etc/nginx/nginx.conf
 
-# Create startup script
+# Create startup script and make it executable
 COPY start-railway.sh /start.sh
-RUN chmod +x /start.sh
+RUN chmod +x /start.sh && \
+    # Test script syntax
+    bash -n /start.sh && \
+    echo "✅ Startup script syntax is valid"
 
 # Expose port (Railway automatically detects this)
 EXPOSE 8080
 
-# Health check
+# Health check - test nginx directly
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8080/health || exit 1
 
+# Run the startup script
 CMD ["/start.sh"]
